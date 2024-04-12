@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <tuple>
 #include <bits/stdc++.h> 
-#include "../raylib/src/raylib.h"
+#include "../lib/raylib/src/raylib.h"
 
 // A hash function used to hash a tuple 
 struct hash_tuple { 
@@ -21,17 +21,17 @@ struct hash_tuple {
 };
 
 enum PieceColor {
-    White = 0,
-    Black = 1,
+    White = 8,
+    Black = 16,
 };
 
 enum PieceType {
-    Pawn = 100,
-    Knight = 300,
-    Bishop = 310,
-    Rook = 500,
-    Queen = 800,
-    King = -1,
+    Pawn = 1,
+    Knight = 2,
+    Bishop = 3,
+    Rook = 4,
+    Queen = 5,
+    King = 6,
 };
 
 class Piece {
@@ -50,6 +50,7 @@ public:
         this->x = x;
         this->y = y;
     }
+
 
     void setX(int x) {
         this->x = x;
@@ -83,6 +84,10 @@ class Board {
     void load_textures();
     Texture2D get_texture(int color, int type);
 
+    // Represents the board - but only indicated if the a square is occupied or not -- will be used to index the `pieces_arr`
+    unsigned long long bitbord;
+    // Represents all pieces in an array as 16bit integers, where the first 2 bits represents the colour and rest of them represents type
+    uint16_t pieces_arr[64];
 
 public:
     void Debug() {

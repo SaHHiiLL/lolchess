@@ -1,32 +1,7 @@
 #include "./chess.hpp"
-#include "../raylib/src/raylib.h"
+#include "../lib/raylib/src/raylib.h"
 #include <unordered_map>
 #include <tuple>
-
-// // DEPERECATED
-// void Board::draw(int size, int x_offset, int y_offset, std::unordered_map<std::tuple<int, int>, Texture2D, hash_tuple> texture_map) {
-//
-//     size = size / 8;
-//     bool w_b = true;
-//
-//     Color white = GetColor(0xEBECD0FF);
-//     Color black = GetColor(0x739552ff);
-//     for (int i = 0; i < 8; i++) {
-//
-//         for (int j = 0; j < 8; j++) {
-//
-//             DrawRectangle((j * size) + x_offset, (i * size) + y_offset, size, size,(w_b == true ? white : black) );
-//             auto key = std::tuple(i, j);
-//             if (texture_map.find(key) != texture_map.end()) {
-//                 DrawTexture(texture_map.at(key),  (j * size) + x_offset, (i * size) + y_offset, WHITE);
-//             }
-//
-//             w_b = !w_b;
-//         }
-//         w_b = !w_b;
-//     }
-// }
-//
 
 void Board::draw() {
     bool w_b = true;
@@ -37,10 +12,14 @@ void Board::draw() {
 
         for (int j = 0; j < 8; j++) {
 
-            DrawRectangle((j * this->square_size) + this->x_offset, (i * this->square_size) + this->y_offset, this->square_size, this->square_size,(w_b == true ? white : black) );
+            DrawRectangle(
+                (j * this->square_size) + this->x_offset, 
+                (i * this->square_size) + this->y_offset, 
+                this->square_size, 
+                this->square_size,
+                (w_b == true ? white : black)
+            );
             auto key = std::tuple(i, j);
-            // Draw all pieces
-            // TODO:
             this->drawPieces();
             w_b = !w_b;
         }
@@ -208,7 +187,6 @@ void Board::parse_fen(std::string fen) {
                 }
             }
         }
-
     }
 
     this->pieces = p;

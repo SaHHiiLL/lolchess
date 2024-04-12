@@ -3,11 +3,12 @@ CC=clang++
 OUT_DIR=target
 CFLAGS=-g  -lm -ldl -lrt -lpthread
 
-pre:
-	mkdir -p $(OUT_DIR)
 
 build: pre
-	$(CC) -o $(OUT_DIR)/lolchess src/*.cpp -g3 ./raylib/src/libraylib.a $(CFLAGS)
+	$(CC) -o $(OUT_DIR)/lolchess src/*.cpp -g3 ./lib/raylib/src/libraylib.a $(CFLAGS)
+
+pre:
+	mkdir -p $(OUT_DIR)
 
 dep: pre
 	unzip resourcees/lila-public-piece.zip -d ./target
