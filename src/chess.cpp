@@ -3,10 +3,32 @@
 #include <unordered_map>
 #include <tuple>
 
-// DEPERECATED
-void Board::draw(int size, int x_offset, int y_offset, std::unordered_map<std::tuple<int, int>, Texture2D, hash_tuple> texture_map) {
+// // DEPERECATED
+// void Board::draw(int size, int x_offset, int y_offset, std::unordered_map<std::tuple<int, int>, Texture2D, hash_tuple> texture_map) {
+//
+//     size = size / 8;
+//     bool w_b = true;
+//
+//     Color white = GetColor(0xEBECD0FF);
+//     Color black = GetColor(0x739552ff);
+//     for (int i = 0; i < 8; i++) {
+//
+//         for (int j = 0; j < 8; j++) {
+//
+//             DrawRectangle((j * size) + x_offset, (i * size) + y_offset, size, size,(w_b == true ? white : black) );
+//             auto key = std::tuple(i, j);
+//             if (texture_map.find(key) != texture_map.end()) {
+//                 DrawTexture(texture_map.at(key),  (j * size) + x_offset, (i * size) + y_offset, WHITE);
+//             }
+//
+//             w_b = !w_b;
+//         }
+//         w_b = !w_b;
+//     }
+// }
+//
 
-    size = size / 8;
+void Board::draw() {
     bool w_b = true;
 
     Color white = GetColor(0xEBECD0FF);
@@ -15,35 +37,103 @@ void Board::draw(int size, int x_offset, int y_offset, std::unordered_map<std::t
 
         for (int j = 0; j < 8; j++) {
 
-            DrawRectangle((j * size) + x_offset, (i * size) + y_offset, size, size,(w_b == true ? white : black) );
+            DrawRectangle((j * this->square_size) + this->x_offset, (i * this->square_size) + this->y_offset, this->square_size, this->square_size,(w_b == true ? white : black) );
             auto key = std::tuple(i, j);
-            if (texture_map.find(key) != texture_map.end()) {
-                DrawTexture(texture_map.at(key),  (j * size) + x_offset, (i * size) + y_offset, WHITE);
-            }
-
+            // Draw all pieces
+            // TODO:
+            this->drawPieces();
             w_b = !w_b;
         }
         w_b = !w_b;
     }
 }
 
-void Board::load_textures() {
-    // TODO: throw an error
-    if (this->pieces.empty()) {
-        return;
-    }
-    
+void Board::drawPieces() {
     for (size_t i = 0; i < this->pieces.size(); i++) {
-        this->pieces.at(i).get_texture();
+        auto p = this->pieces.at(i);
+        auto key = std::make_tuple(p.get_color(), p.get_type()); 
+
+        if (texture_map.find(key) != texture_map.end()) {
+            Texture2D texture = this->texture_map.at(key);
+            DrawTexture(texture_map.at(key),  (p.getX() * this->square_size) + this->x_offset, (p.getY() * this->square_size) + this->y_offset, WHITE);
+        }
+    }
+}
+
+void Board::load_textures() {
+    std::vector<std::tuple<PieceColor, PieceType>> pairs = {
+        std::make_tuple(PieceColor::Black, PieceType::Pawn),
+        std::make_tuple(PieceColor::Black, PieceType::Queen),
+        std::make_tuple(PieceColor::Black, PieceType::King),
+        std::make_tuple(PieceColor::Black, PieceType::Rook),
+        std::make_tuple(PieceColor::Black, PieceType::Knight),
+        std::make_tuple(PieceColor::Black, PieceType::Bishop),
+
+        std::make_tuple(PieceColor::White, PieceType::Pawn),
+        std::make_tuple(PieceColor::White, PieceType::Queen),
+        std::make_tuple(PieceColor::White, PieceType::King),
+        std::make_tuple(PieceColor::White, PieceType::Rook),
+        std::make_tuple(PieceColor::White, PieceType::Knight),
+        std::make_tuple(PieceColor::White, PieceType::Bishop),
+    };
+
+    for (std::tuple<PieceColor, PieceType> p: pairs) {
+        Texture2D texture = this->get_texture(std::get<0>(p), std::get<1>(p));
+        this->texture_map.insert(std::make_pair(p, texture));
+    }
+}
+
+Texture2D Board::get_texture(int color, int type) {
+    std::string image_file_name("resourcees/alpha/");
+    if (color == PieceColor::Black) {
+        image_file_name.push_back('b');
+    } else {
+        image_file_name.push_back('w');
     }
 
+    switch (type) {
+        case PieceType::King: {
+            image_file_name.push_back('K');
+            break;
+        } 
+        case PieceType::Knight: {
+            image_file_name.push_back('N');
+            break;
+        }
+        case PieceType::Queen: {
+            image_file_name.push_back('Q');
+            break;
+        }
+        case PieceType::Pawn: {
+            image_file_name.push_back('P');
+            break;
+        }
+        case PieceType::Bishop: {
+            image_file_name.push_back('B');
+            break;
+        }
+        case PieceType::Rook: {
+            image_file_name.push_back('R');
+            break;
+        }
+    }
+    image_file_name.append(".svg.png");
+
+    Image img = LoadImage(image_file_name.c_str());
+    std::cout << "Square size" << this->square_size << std::endl;
+    ImageResizeCanvas(&img, this->square_size, this->square_size, 0, 0, WHITE);
+    
+// RLAPI void ImageResizeCanvas(Image *image, int newWidth, int newHeight, int offsetX, int offsetY, Color fill);  // Resize canvas and fill with color
+    Texture2D t = LoadTextureFromImage(img);
+    UnloadImage(img);
+    return t;
 }
 
 void Board::parse_fen(std::string fen) {
     std::vector<Piece> p;
     int x = 0;
     int y = 0;
-    
+
     for (size_t i = 0; i < fen.length(); i++) {
         switch (fen.at(i)) {
             case '/': {
@@ -56,6 +146,12 @@ void Board::parse_fen(std::string fen) {
                 p.push_back(Piece(PieceColor::Black, PieceType::Rook, x++, y));
                 break;
             }
+            case 'n': {
+                // Black knight
+                p.push_back(Piece(PieceColor::Black, PieceType::Knight, x++, y));
+                break;
+            }
+
             case 'q': {
                 // Black Queen 
                 p.push_back(Piece(PieceColor::Black, PieceType::Queen, x++, y));
@@ -81,6 +177,11 @@ void Board::parse_fen(std::string fen) {
                 p.push_back(Piece(PieceColor::White, PieceType::Rook, x++, y));
                 break;
             }
+            case 'N': {
+                // White knight
+                p.push_back(Piece(PieceColor::White, PieceType::Knight, x++, y));
+                break;
+            }
             case 'Q': {
                 // White Queen 
                 p.push_back(Piece(PieceColor::White, PieceType::Queen, x++, y));
@@ -101,20 +202,19 @@ void Board::parse_fen(std::string fen) {
                 p.push_back(Piece(PieceColor::White, PieceType::Pawn, x++, y));
                 break;
             }
+            default: {
+                char d = fen.at(i);
+                if (std::isdigit(d)) {
+                    x += int(d);
+                } else {
+                    std::cerr << "Lol Invalid char at : " << i << "Char in question: " << d << std::endl;
+                }
+            }
         }
 
-        char d = fen.at(i);
-
-        if (std::isdigit(d)) {
-            x += int(d);
-        } else {
-            std::cerr << "Lol Invalid char at : " << i << "Char in question: " << d << std::endl;
-        }
     }
 
     this->pieces = p;
 }
 
-void Board::draw(int size, int x_offset, int y_offset, std::string fen) {
-    this->parse_fen(fen);
-}
+

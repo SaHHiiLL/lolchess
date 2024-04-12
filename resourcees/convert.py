@@ -14,17 +14,17 @@ def main():
     """
     print("Converting HEIC to JPG")
 
-    input_dir = "/home/Sahil/programing/cpp/lolchess/resourcees/"
+    input_dir = "./alpha/"
 
     # Create a new directory to store the converted files
-    output_dir = "/home/Sahil/programing/cpp/lolchess/resourcees"
+    output_dir = "./resourcees/alpha"
     os.makedirs(output_dir, exist_ok=True)
 
     # Convert HEIC to JPG
     for filename in os.listdir(input_dir):
         if filename.endswith(".svg"):
             print(f"Converting {filename} to jpg")
-            subprocess.run(["ffmpeg", "-i", f"{input_dir}/{filename}", f"{output_dir}/{filename}.jpg"])
+            subprocess.run(["ffmpeg", "-i", f"{input_dir}/{filename}", f"{output_dir}/{filename}.png"])
 
     print("Conversion complete")
 

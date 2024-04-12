@@ -19,10 +19,12 @@ int main() {
     //     texture_map.insert_or_assign(it.first, texture);
     // }
 
+    Board b("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", board_size, 60, 60);
+    b.Debug();
+
     while (!WindowShouldClose()) {
         BeginDrawing();
-        Board b;
-        b.draw(board_size, 60, 60, texture_map);
+        b.draw();
         EndDrawing();
     }
 
