@@ -84,7 +84,7 @@ void Board::load_textures() {
 }
 
 Texture2D Board::get_texture(int color, int type) {
-    std::string image_file_name("resourcees/alpha/");
+    std::string image_file_name("target/alpha/con/");
     if (color == PieceColor::Black) {
         image_file_name.push_back('b');
     } else {
@@ -120,10 +120,7 @@ Texture2D Board::get_texture(int color, int type) {
     image_file_name.append(".svg.png");
 
     Image img = LoadImage(image_file_name.c_str());
-    std::cout << "Square size" << this->square_size << std::endl;
-    ImageResizeCanvas(&img, this->square_size, this->square_size, 0, 0, WHITE);
-    
-// RLAPI void ImageResizeCanvas(Image *image, int newWidth, int newHeight, int offsetX, int offsetY, Color fill);  // Resize canvas and fill with color
+    ImageResize(&img, this->square_size, this->square_size); 
     Texture2D t = LoadTextureFromImage(img);
     UnloadImage(img);
     return t;

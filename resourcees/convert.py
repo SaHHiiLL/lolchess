@@ -14,10 +14,10 @@ def main():
     """
     print("Converting HEIC to JPG")
 
-    input_dir = "./alpha/"
+    input_dir = "./target/alpha"
 
     # Create a new directory to store the converted files
-    output_dir = "./resourcees/alpha"
+    output_dir = "./target/alpha/con/"
     os.makedirs(output_dir, exist_ok=True)
 
     # Convert HEIC to JPG

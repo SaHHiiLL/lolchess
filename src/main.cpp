@@ -3,10 +3,10 @@
 
 int main() {
 
-    InitWindow(1000, 1000, "LolChess");
+    InitWindow(500, 500, "LolChess");
     SetTargetFPS(60);
 
-    int board_size = 627;
+    int board_size = 480;
 
     // for (auto& it : image_map) {
     //     std::cout << "Loading image" << std::endl;
@@ -19,7 +19,7 @@ int main() {
     //     texture_map.insert_or_assign(it.first, texture);
     // }
 
-    Board b("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", board_size, 60, 60);
+    Board b("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", board_size, 0, 0);
     b.Debug();
 
     while (!WindowShouldClose()) {
