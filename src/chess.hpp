@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <tuple>
 #include <bits/stdc++.h> 
-#include <raylib.h>
+#include "../raylib/src/raylib.h"
 
 // A hash function used to hash a tuple 
 struct hash_tuple { 
@@ -95,12 +95,12 @@ public:
         std::cout << this->square_size << std::endl;
     }
     Board(std::string fen, int size, int x_off, int y_off) {
-        this->parse_fen(fen);
-        this->load_textures();
         this->size = size;
         this->x_offset = x_off;
         this->y_offset = y_off;
         this->square_size = this->size / 8;
+        this->parse_fen(fen);
+        this->load_textures();
     }
 
     // @fen https://www.chess.com/terms/fen-chess

@@ -1,5 +1,5 @@
 #include "./chess.hpp"
-#include <raylib.h>
+#include "../raylib/src/raylib.h"
 #include <unordered_map>
 #include <tuple>
 
