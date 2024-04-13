@@ -1,4 +1,4 @@
-#include "./chess.hpp"
+#include "./chess2.hpp"
 #include "../lib/raylib/src/raylib.h"
 
 int main() {
@@ -7,12 +7,11 @@ int main() {
     SetTargetFPS(60);
 
     int board_size = 480;
-    Board b("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", board_size, 0, 0);
-    b.Debug();
+    Board b(board_size, 0, 0, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
 
     while (!WindowShouldClose()) {
         BeginDrawing();
-        b.draw();
+        b.draw_board();
         EndDrawing();
     }
 

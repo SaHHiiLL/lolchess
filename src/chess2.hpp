@@ -36,12 +36,25 @@ enum PieceType {
 // Only convert to this if need DO not store this
 class Piece {
 public:
-       Piece(uint16_t bits); 
+    Piece(uint16_t bits); 
 };
 
 class Board {
+
+    uint64_t enum_to_num(PieceColor color, PieceType type) {
+        return color | type;
+    }
+
+    int set_bitboard(int x, int y) {
+        // Calculate the position in the bitboard using x and y
+        int square = y * 8 + x;
+    
+        bitboard |= (1ULL << (63 - square));
+        return square;
+    }
+
 public:
-    uint64_t bitboard;
+    unsigned long long bitboard;
     uint16_t pieces[64];
     std::unordered_map<uint16_t, Texture2D> texture_map;
 
@@ -50,18 +63,24 @@ public:
     void draw_board();
     void draw_pieces();
     void load_texture();
-    void parse_hen(std::string fen);
+    void parse_fen(std::string fen);
     // Loads texture for an indivisual piece also crops the image so it can fit 
     // in each box
     Texture2D get_texture(uint16_t piece);
+
+
 
     Board(int size, int x, int y, std::string fen) {
         this->board_size = size;
         this->square_size = size / 8;
         this->x = x;
         this->y = y;
+        this->bitboard = 0;
+        for (int i = 0; i < 64; i++) {
+            this->pieces[i] = 0;
+        }
         this->load_texture();
-        this->parse_hen(fen);
+        this->parse_fen(fen);
     }
 };
 
