@@ -33,83 +33,94 @@ void Board::parse_fen(std::string fen) {
             case '/': {
                 y++;
                 x = 0;
-                continue;
+                break;
             }
             case 'r': {
                 // NOTE: same can be used to move the piece in the future?
-                int idx = this->set_bitboard(x++, y);
+                int idx = this->get_square(x++, y);
                 uint16_t val = this->enum_to_num(PieceColor::Black, PieceType::Rook);
                 this->pieces[idx] = val;
                 break;
             } 
             case 'n': {
-                int idx = this->set_bitboard(x++, y);
+                int idx = this->get_square(x++, y);
                 uint16_t val = this->enum_to_num(PieceColor::Black, PieceType::Knight);
                 this->pieces[idx] = val;
                 break;
             }
             case 'b': {
-                int idx = this->set_bitboard(x++, y);
+                int idx = this->get_square(x++, y);
                 uint16_t val = this->enum_to_num(PieceColor::Black, PieceType::Bishop);
                 this->pieces[idx] = val;
                 break;
             }
             case 'q': {
-                int idx = this->set_bitboard(x++, y);
+                int idx = this->get_square(x++, y);
                 uint16_t val = this->enum_to_num(PieceColor::Black, PieceType::Queen);
                 this->pieces[idx] = val;
                 break;
             }
             case 'k': {
-                int idx = this->set_bitboard(x++, y);
+                int idx = this->get_square(x++, y);
                 uint16_t val = this->enum_to_num(PieceColor::Black, PieceType::King);
                 this->pieces[idx] = val;
                 break;
             }
             case 'p': {
-                int idx = this->set_bitboard(x++, y);
+                int idx = this->get_square(x++, y);
                 uint16_t val = this->enum_to_num(PieceColor::Black, PieceType::Pawn);
                 this->pieces[idx] = val;
                 break;
             }
             case 'R': {
-                int idx = this->set_bitboard(x++, y);
+                int idx = this->get_square(x++, y);
                 uint16_t val = this->enum_to_num(PieceColor::White, PieceType::Rook);
                 this->pieces[idx] = val;
                 break;
             }
             case 'B': {
-                int idx = this->set_bitboard(x++, y);
+                int idx = this->get_square(x++, y);
                 uint16_t val = this->enum_to_num(PieceColor::White, PieceType::Bishop);
                 this->pieces[idx] = val;
                 break;
             }
             case 'N': {
-                int idx = this->set_bitboard(x++, y);
+                int idx = this->get_square(x++, y);
                 uint16_t val = this->enum_to_num(PieceColor::White, PieceType::Knight);
                 this->pieces[idx] = val;
                 break;
             }
             case 'Q': {
-                int idx = this->set_bitboard(x++, y);
+                int idx = this->get_square(x++, y);
                 uint16_t val = this->enum_to_num(PieceColor::White, PieceType::Queen);
                 this->pieces[idx] = val;
                 break;
             }
             case 'K': {
-                int idx = this->set_bitboard(x++, y);
+                int idx = this->get_square(x++, y);
                 uint16_t val = this->enum_to_num(PieceColor::White, PieceType::King);
                 this->pieces[idx] = val;
                 break;
             }
             case 'P': {
-                int idx = this->set_bitboard(x++, y);
+                int idx = this->get_square(x++, y);
                 uint16_t val = this->enum_to_num(PieceColor::White, PieceType::Pawn);
                 this->pieces[idx] = val;
                 break;
             }
+            default: {
+                char d = fen.at(i);
+                if (std::isdigit(d)) {
+                    x += d - '0';
+                } else {
+                    std::cerr << "Lol Invalid char at : " << i << "Char in question: " << d << std::endl;
+                    exit(1);
+                }
+            }
         }
     }
+    this->update_bitboard();
+    // this->load_bitboard();
     std::cout << "Parse_fen " << this->bitboard << std::endl;
 }
 
@@ -160,6 +171,7 @@ Texture2D Board::get_texture(uint16_t piece) {
         case 4: {
             image_file_name.push_back('R');
             break;
+
         }
         case 5: {
             image_file_name.push_back('Q');
@@ -178,38 +190,13 @@ Texture2D Board::get_texture(uint16_t piece) {
     UnloadImage(img);
     return t;
 }
-// void Board::draw() {
-//     bool w_b = true;
-//
-//     Color white = GetColor(0xEBECD0FF);
-//     Color black = GetColor(0x739552ff);
-//     for (int i = 0; i < 8; i++) {
-//
-//         for (int j = 0; j < 8; j++) {
-//
-//             DrawRectangle(
-//                 (j * this->square_size) + this->x_offset, 
-//                 (i * this->square_size) + this->y_offset, 
-//                 this->square_size, 
-//                 this->square_size,
-//                 (w_b == true ? white : black)
-//             );
-//             auto key = std::tuple(i, j);
-//             this->drawPieces();
-//             w_b = !w_b;
-//         }
-//         w_b = !w_b;
-//     }
-// }
 
 void Board::draw_board() {
     bool w_b = true;
     Color white = GetColor(0xEBECD0FF);
     Color black = GetColor(0x739552ff);
     for (int i = 0; i < 8; i++) {
-
         for (int j = 0; j < 8; j++) {
-
             DrawRectangle(
                 (j * this->square_size) + this->x, 
                 (i * this->square_size) + this->y, 
@@ -218,47 +205,33 @@ void Board::draw_board() {
                 (w_b == true ? white : black)
             );
             auto key = std::tuple(i, j);
-            this->draw_pieces();
+            this->draw_piece(j, i);
             w_b = !w_b;
         }
         w_b = !w_b;
     }
+    this->debug_draw();
 }
 
-//
-// void Board::drawPieces() {
-//     for (size_t i = 0; i < this->pieces.size(); i++) {
-//         auto p = this->pieces.at(i);
-//         auto key = std::make_tuple(p.get_color(), p.get_type()); 
-//
-//         if (texture_map.find(key) != texture_map.end()) {
-//             Texture2D texture = this->texture_map.at(key);
-//             DrawTexture(texture_map.at(key),  (p.getX() * this->square_size) + this->x_offset, (p.getY() * this->square_size) + this->y_offset, WHITE);
-//         }
-//     }
-// }
-
-
-void Board::draw_pieces() {
-    unsigned long long n = this->bitboard;
-
-    int index = 0;
-
-    for (size_t i = 0; n; i++, n >>=1) {
-        if (n & 1) {
-            int y = i / 8; // Convert index to y coordinate
-            int x = i % 8; // Convert index to x coordinate
-
-            // std::cout << this->pieces[i] << std::endl;
-            // Gets the texture from the map
-            // For now will just assume that there will always be a valid key
-            // DrawTexture(this->texture_map.at(this->pieces[i]);
-            //
-            DrawTexture(texture_map.at(this->pieces[i]),
-                        (x * this->square_size)+ this->x,
-                        (y * this->square_size) + this->y,
-                        WHITE);
-        }
+void Board::debug_draw() {
+    if (!this->debug) {
+        return;
     }
+    DrawText("Debug", 10, 10, 20, RED);
+    // Draw bitboard as debug
+    std::string bitboard_str("Bitboard: ");
+    bitboard_str.append(std::to_string(this->bitboard));
+    std::cout << bitboard_str << std::endl;
+    DrawText(bitboard_str.c_str(), 10, 30, 20, RED);
+
+    // Draw pieces as debug
+    DrawFPS(10, 50);
+
 }
 
+void Board::draw_piece(int x, int y) {
+    int idx = this->get_square(x, y);
+    uint16_t piece = this->pieces[idx];
+    Texture2D texture = this->texture_map[piece];
+    DrawTexture(texture, x * this->square_size + this->x, y * this->square_size + this->y, WHITE);
+}
