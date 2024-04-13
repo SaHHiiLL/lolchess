@@ -42,9 +42,22 @@ public:
 };
 
 class Board {
-
     uint64_t enum_to_num(PieceColor color, PieceType type) {
         return color | type;
+    }
+    std::pair<PieceColor, PieceType> num_to_enum(uint16_t pp) {
+        int p = pp - 8;
+        PieceColor color {};
+        PieceType type = (PieceType) p;
+
+        if (p < 0) {
+            // White
+            color = White;
+        } else {
+            // Black
+            color = Black;
+        }
+        return std::make_pair(color, type);
     }
 
     int get_square(int x, int y) {
@@ -61,35 +74,16 @@ class Board {
             }
         }
     }
-
-    // void load_bitboard() {
-    //     for (int i = 0; i < 64; i++) {
-    //         if (this->pieces[i] != 0) {
-    //             this->update_bitboard(i);
-    //         }
-    //     }
-    // }
-    //
-    // void update_bitboard(int pos) {
-    //     this->bitboard |= (1ULL << (63 - pos));
-    // }
-
-
-public:
     bool debug = false;
-    unsigned long long bitboard;
-    uint16_t pieces[64];
-    std::unordered_map<uint16_t, Texture2D> texture_map;
+    unsigned long long bitboard = 0;
+    uint16_t pieces[64] = {0};
+    std::unordered_map<uint16_t, Texture2D> texture_map = {};
 
-    int board_size, square_size, x, y; // x and y represent where to start drawing the board
+    int board_size = 0,  square_size = 0, x = 0, y = 0; // x and y represent where to start drawing the board
 
-    void enable_debug() {
-        this->debug = true;
-    }
 
     void print_piece(uint16_t piece[]);
     void debug_draw();
-    void draw_board();
     void draw_piece(int x, int y);
     void load_texture();
     void parse_fen(std::string fen);
@@ -97,12 +91,8 @@ public:
     // in each box
     Texture2D get_texture(uint16_t piece);
 
-
     void print_bitboard() {
         for (int i = 0; i < 64; i++) {
-            // if (i % 8 == 0) {
-            //     std::cout << std::endl;
-            // }
             std::cout << ((bitboard >> (63 - i)) & 1);
         }
         std ::cout << std::endl << this->bitboard << std::endl;
@@ -110,15 +100,42 @@ public:
     }
 
 
+public:
+    Vector2 cursor = {0, 0};
+    Vector2 selected = {0, 0};
+    bool has_selected_piece = false;
+    uint16_t selected_piece = 0;
+
+    // true represents WHITE to move and false represents BLACK
+    bool turn = true;
+
+    void toggle_move() {
+        this->has_selected_piece = false;
+        this->turn = !this->turn;
+    }
+    
+    void move_piece();
+    void move_cursor(int x, int y);
+    void select_piece();
+    bool is_friendly(uint16_t p, uint16_t o);
+    bool is_correct_piece_selected(uint16_t p);
+    void unselect_piece();
+
+
+    void enable_debug() {
+        this->debug = true;
+    }
+    void draw_board();
+
+    // Constructor
+    // Loads the texture for each piece and parses the fen
+    // fen is the string that represents the board
     Board(int size, int x, int y, std::string fen) {
         this->board_size = size;
         this->square_size = size / 8;
         this->x = x;
         this->y = y;
         this->bitboard = 0;
-        for (int i = 0; i < 64; i++) {
-            this->pieces[i] = 0;
-        }
         this->load_texture();
         this->parse_fen(fen);
     }

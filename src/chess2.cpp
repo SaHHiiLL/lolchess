@@ -120,8 +120,87 @@ void Board::parse_fen(std::string fen) {
         }
     }
     this->update_bitboard();
-    // this->load_bitboard();
     std::cout << "Parse_fen " << this->bitboard << std::endl;
+}
+
+void Board::select_piece() {
+    int idx = this->get_square(this->cursor.x, this->cursor.y);
+    uint16_t piece = this->pieces[idx];
+    if (piece == 0) {
+        return;
+    }
+    if (!this->is_correct_piece_selected(piece)) {
+        return;
+    }
+
+    if (this->cursor.x == this->selected.x && this->cursor.y == this->selected.y) {
+        this->unselect_piece();
+        return;
+    }
+
+    this->selected = {this->cursor.x, this->cursor.y};
+    this->selected_piece = piece;
+    this->has_selected_piece = true;
+}
+
+void Board::unselect_piece() {
+    this->has_selected_piece = false;
+    this->selected = {0, 0};
+    this->selected_piece = 0;
+}
+
+
+// Comparing colors
+bool Board::is_friendly(uint16_t c, uint16_t o) {
+    bool p = this->num_to_enum(c).first == this->num_to_enum(o).first;
+    // std::cout << std::boolalpha << p << std::endl;
+    return p;
+}
+
+bool Board::is_correct_piece_selected(uint16_t piece) {
+    bool p = this->turn == (piece < 8);
+    // std::cout << std::boolalpha << p << std::endl;
+    return p;
+}
+
+#define defer_this() do { goto defer; } while(0)
+
+void Board::move_piece() {
+    int next_square_idx = this->get_square(this->cursor.x, this->cursor.y);
+
+    if (!this->has_selected_piece) {
+        return;
+    }
+
+    // // Check if the selected piece is same as the one making the move
+    
+    // Constrains
+    // 1. Piece can only move a free square or a square occupied by other piece
+    // 2. A Piece can only move if it's their turn
+
+    if (this->pieces[next_square_idx] != 0 ) { // checks if the square is occupied or not
+        // sqaure is occupied
+        if (this->is_friendly(this->pieces[next_square_idx], this->selected_piece)) {
+            return;
+        }
+    }
+    this->pieces[next_square_idx] = this->selected_piece;
+    this->pieces[this->get_square(this->selected.x, this->selected.y)] = 0;
+    this->update_bitboard();
+    
+defer:
+    this->toggle_move();
+}
+
+void Board::move_cursor(int x, int y) {    
+    if (this->cursor.x + x < 0 || this->cursor.x + x >= 8) {
+        return;
+    }
+    if (this->cursor.y + y < 0 || this->cursor.y + y >= 8) {
+        return;
+    }
+    this->cursor.x += x;
+    this->cursor.y += y;
 }
 
 
@@ -197,13 +276,34 @@ void Board::draw_board() {
     Color black = GetColor(0x739552ff);
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
-            DrawRectangle(
-                (j * this->square_size) + this->x, 
-                (i * this->square_size) + this->y, 
-                this->square_size, 
-                this->square_size,
-                (w_b == true ? white : black)
-            );
+            // Draws a blue square to indicate that the square is selected
+            if (this->has_selected_piece == true && this->selected.x == j && this->selected.y == i) {
+                DrawRectangle(
+                    (j * this->square_size) + this->x, 
+                    (i * this->square_size) + this->y, 
+                    this->square_size, 
+                    this->square_size,
+                    BLUE
+                );
+            } else {
+                if (this->cursor.x == j && this->cursor.y == i) {
+                    DrawRectangle(
+                        (j * this->square_size) + this->x, 
+                        (i * this->square_size) + this->y, 
+                        this->square_size, 
+                        this->square_size,
+                        RED
+                    );
+                } else {
+                    DrawRectangle(
+                        (j * this->square_size) + this->x, 
+                        (i * this->square_size) + this->y, 
+                        this->square_size, 
+                        this->square_size,
+                        (w_b == true ? white : black)
+                    );
+                }
+            }
             auto key = std::tuple(i, j);
             this->draw_piece(j, i);
             w_b = !w_b;
@@ -221,12 +321,19 @@ void Board::debug_draw() {
     // Draw bitboard as debug
     std::string bitboard_str("Bitboard: ");
     bitboard_str.append(std::to_string(this->bitboard));
-    std::cout << bitboard_str << std::endl;
+
     DrawText(bitboard_str.c_str(), 10, 30, 20, RED);
 
     // Draw pieces as debug
     DrawFPS(10, 50);
 
+    // Draw Mouse position
+    Vector2 mouse = GetMousePosition();
+    std::string mouse_str("Mouse: ");
+    mouse_str.append(std::to_string(mouse.x));
+    mouse_str.append(", ");
+    mouse_str.append(std::to_string(mouse.y));
+    DrawText(mouse_str.c_str(), 10, 70, 20, RED);
 }
 
 void Board::draw_piece(int x, int y) {
