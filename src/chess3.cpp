@@ -8,6 +8,13 @@ uint64_t Board::enum_to_num(PieceColor color, PieceType type) {
     return color | type;
 }
 
+void print_texture_map(std::unordered_map<uint16_t, Texture2D> texture_map) {
+    for (auto const& [key, val] : texture_map) {
+        std::cout << key << " " << val.id << std::endl;
+    }
+    exit(1);  
+}
+
 
 std::pair<PieceColor, PieceType> Board::num_to_enum(uint16_t pp) {
     int p = pp - 8;
@@ -25,9 +32,8 @@ std::pair<PieceColor, PieceType> Board::num_to_enum(uint16_t pp) {
 }
 
 int Board::get_square(int x, int y) {
-    // Calculate the position in the bitboard using x and y
-    // int square = y * 8 + x;
-    int square = (7 - x) + (y * 8);
+    // Calculate the index of the square in the 1D array
+    int square = (x) + (y * 8);
     return square;
 }
 
@@ -119,63 +125,75 @@ void Board::load_position_from_fen(std::string fen) {
                 int idx = this->get_square(x++, y);
                 std::cout << "Rook at: " << idx << std::endl;
                 this->black_rook_bitboard |= (1ULL << (63 - idx));
+                this->board[idx] = PieceColor::Black | PieceType::Rook;
                 break;
             } 
-            // case 'n': {
-            //     int idx = this->get_square(x++, y);
-            //     this->black_knight_bitboard |= (1ULL << (63 - idx));
-            //     break;
-            // }
-            // case 'b': {
-            //     int idx = this->get_square(x++, y);
-            //     this->black_bishop_bitboard |= (1ULL << (63 - idx));
-            //     break;
-            // }
-            // case 'q': {
-            //     int idx = this->get_square(x++, y);
-            //     this->black_queen_bitboard |= (1ULL << (63 - idx));
-            //     break;
-            // }
-            // case 'k': {
-            //     int idx = this->get_square(x++, y);
-            //     this->black_king_bitboard |= (1ULL << (63 - idx));
-            //     break;
-            // }
-            // case 'p': {
-            //     int idx = this->get_square(x++, y);
-            //     this->black_pawn_bitboard |= (1ULL << (63 - idx));
-            //     break;
-            // }
-            // case'R': {
-            //     int idx = this->get_square(x++, y);
-            //     this->white_rook_bitboard |= (1ULL << (63 - idx));
-            //     break;
-            // }
-            // case 'B': {
-            //     int idx = this->get_square(x++, y);
-            //     this->white_bishop_bitboard |= (1ULL << (63 - idx));
-            //     break;
-            // }
-            // case 'N': {
-            //     int idx = this->get_square(x++, y);
-            //     this->white_knight_bitboard |= (1ULL << (63 - idx));
-            //     break;
-            // }
-            // case 'Q': {
-            //     int idx = this->get_square(x++, y);
-            //     this->white_queen_bitboard |= (1ULL << (63 - idx));
-            //     break;
-            // }
-            // case 'K': {
-            //     int idx = this->get_square(x++, y);
-            //     this->white_king_bitboard |= (1ULL << (63 - idx));
-            //     break;
-            // }
-            // case 'P': {
-            //     int idx = this->get_square(x++, y);
-            //     this->white_pawn_bitboard |= (1ULL << (63 - idx));
-            //     break;
-            // }
+            case 'n': {
+                int idx = this->get_square(x++, y);
+                this->black_knight_bitboard |= (1ULL << (63 - idx));
+                this->board[idx] = PieceColor::Black | PieceType::Knight;
+                break;
+            }
+            case 'b': {
+                int idx = this->get_square(x++, y);
+                this->black_bishop_bitboard |= (1ULL << (63 - idx));
+                this->board[idx] = PieceColor::Black | PieceType::Bishop;
+                break;
+            }
+            case 'q': {
+                int idx = this->get_square(x++, y);
+                this->black_queen_bitboard |= (1ULL << (63 - idx));
+                this->board[idx] = PieceColor::Black | PieceType::Queen;
+                break;
+            }
+            case 'k': {
+                int idx = this->get_square(x++, y);
+                this->black_king_bitboard |= (1ULL << (63 - idx));
+                this->board[idx] = PieceColor::Black | PieceType::King;
+                break;
+            }
+            case 'p': {
+                int idx = this->get_square(x++, y);
+                this->black_pawn_bitboard |= (1ULL << (63 - idx));
+                this->board[idx] = PieceColor::Black | PieceType::Pawn;
+                break;
+            }
+            case'R': {
+                int idx = this->get_square(x++, y);
+                this->white_rook_bitboard |= (1ULL << (63 - idx));
+                this->board[idx] = PieceColor::White | PieceType::Rook;
+                break;
+            }
+            case 'B': {
+                int idx = this->get_square(x++, y);
+                this->white_bishop_bitboard |= (1ULL << (63 - idx));
+                this->board[idx] = PieceColor::White | PieceType::Bishop;
+                break;
+            }
+            case 'N': {
+                int idx = this->get_square(x++, y);
+                this->white_knight_bitboard |= (1ULL << (63 - idx));
+                this->board[idx] = PieceColor::White | PieceType::Knight;
+                break;
+            }
+            case 'Q': {
+                int idx = this->get_square(x++, y);
+                this->white_queen_bitboard |= (1ULL << (63 - idx));
+                this->board[idx] = PieceColor::White | PieceType::Queen;
+                break;
+            }
+            case 'K': {
+                int idx = this->get_square(x++, y);
+                this->white_king_bitboard |= (1ULL << (63 - idx));
+                this->board[idx] = PieceColor::White | PieceType::King;
+                break;
+            }
+            case 'P': {
+                int idx = this->get_square(x++, y);
+                this->white_pawn_bitboard |= (1ULL << (63 - idx));
+                this->board[idx] = PieceColor::White | PieceType::Pawn;
+                break;
+            }
             default: {
                 char d = fen.at(i);
                 if (std::isdigit(d)) {
@@ -223,6 +241,10 @@ void Game::draw_board() {
     }
 }
 
+bool Board::toggle_turn() {
+    return !this->is_white_turn;
+}
+
 bool is_k_bit_set(int n, int k)
 {
     return (n & ( 1 << k )) >> k;
@@ -231,53 +253,19 @@ bool is_k_bit_set(int n, int k)
 uint16_t Board::get_piece_at_square(int idx) {
     // Get the idx and then check every bitboard to see if the piece is there
     // idfk if this is a good way to do it but it works :)
+    return this->board[idx];
+}
 
-    if (is_k_bit_set(this->board_bitboard(), idx)) {
-        PieceColor color;
-        PieceType type;
 
-        if (is_k_bit_set(this->white_bitboard(), idx)) {
-            color = White;
-        }
-        if (is_k_bit_set(this->black_bitboard(), idx)) {
-            color = Black;
-        }
-
-        if (is_k_bit_set(this->white_pawn_bitboard, idx)) {
-            type = PieceType::Pawn;
-        } else if (is_k_bit_set(this->white_knight_bitboard, idx)) {
-            type = PieceType::Knight;
-        } else if (is_k_bit_set(this->white_bishop_bitboard, idx)) {
-            type = PieceType::Bishop;
-        } else if (is_k_bit_set(this->white_rook_bitboard, idx)) {
-            type = PieceType::Rook;
-        } else if (is_k_bit_set(this->white_queen_bitboard, idx)) {
-            type = PieceType::Queen;
-        } else if (is_k_bit_set(this->white_king_bitboard, idx)) {
-            type = PieceType::King;
-        } else if (is_k_bit_set(this->black_pawn_bitboard, idx)) {
-            type = PieceType::Pawn;
-        } else if (is_k_bit_set(this->black_knight_bitboard, idx)) {
-            type = PieceType::Knight;
-        } else if (is_k_bit_set(this->black_bishop_bitboard, idx)) {
-            type = PieceType::Bishop;
-        } else if (is_k_bit_set(this->black_rook_bitboard, idx)) {
-            type = PieceType::Rook;
-        } else if (is_k_bit_set(this->black_queen_bitboard, idx)) {
-            type = PieceType::Queen;
-        } else if (is_k_bit_set(this->black_king_bitboard, idx)) {
-            type = PieceType::King;
-        } else {
-            std::cerr << "Lol Invalid piece at idx: " << idx << std::endl;
-            exit(1);
-        }
-        auto res = this->enum_to_num(color, type);
-        return res;
+void Game::draw_piece(int i) {
+    uint16_t piece = this->b.get_piece_at_square(i);
+    if (piece == 0) {
+        return;
     }
-    return 0;
+    Texture2D texture = this->texture_map[piece];
+    int x = i % 8;
+    int y = i / 8;
+    DrawTexture(texture, x * this->square_size + this->x, y * this->square_size + this->y, WHITE);
 }
 
-void Game::draw_piece(int idx) {
-    ///TODO: fix this function
-}
 

@@ -7,7 +7,7 @@ int main() {
     SetTargetFPS(60);
 
     int board_size = 500;
-    Game b(board_size, 100, 100, "r2r5/8/8/8/8/8/8/8");
+    Game b(board_size, 100, 100, "r6r/1b2k1bq/8/8/7B/8/8/R3K2R");
 
     while (!WindowShouldClose()) {
         BeginDrawing();

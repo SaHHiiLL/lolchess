@@ -40,6 +40,8 @@ enum PieceType {
 };
 class Board {
 
+    bool is_white_turn = true;
+
 public:
 
     uint64_t white_pawn_bitboard = { 0 };
@@ -55,6 +57,8 @@ public:
     uint64_t black_queen_bitboard = { 0 };
     uint64_t black_bishop_bitboard = { 0 };
     uint64_t black_knight_bitboard = { 0 };
+
+    uint16_t board[64] = { 0 };
 
     uint64_t white_bitboard() {
         return white_knight_bitboard | white_bishop_bitboard | white_pawn_bitboard | white_rook_bitboard | white_king_bitboard | white_queen_bitboard;
@@ -118,6 +122,8 @@ public:
     void load_position_from_fen(std::string fen);
     // Get piece at a square
     uint16_t get_piece_at_square(int y);
+    // toggle turn
+    bool toggle_turn();
 
     void debug_print() {
         std::cout << "White pawn: " << white_pawn_bitboard << std::endl;
@@ -139,20 +145,28 @@ public:
 
         std::cout << "Board bitboard: " << board_bitboard() << std::endl;
     }
+
+    PieceColor get_turn() {
+        return is_white_turn ? PieceColor::White : PieceColor::Black;
+    }
 };
 
+static std::string default_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 class Game {
     int size = 480;
     int x = 0;
     int y = 0;
     int square_size;
+    Vector2 cursor = { 0, 0 };
+    Vector2 selected_square = { 0, 0 };
+
 
     Board b{ };
 
     std::unordered_map<uint16_t, Texture2D> texture_map = {};
 
 public:
-    Game (int size, int x, int y, std::string fen) {
+    Game (int size, int x, int y, std::string fen = default_fen) {
         this->size = size;
         this->x = x;
         this->y = y;
