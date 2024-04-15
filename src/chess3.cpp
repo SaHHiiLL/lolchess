@@ -1,4 +1,5 @@
 #include "./chess3.hpp"
+#include <cassert>
 #include <cstdint>
 #include <iostream>
 #include <ostream>
@@ -213,6 +214,9 @@ void Game::draw_board() {
     Color white = GetColor(0xEBECD0FF);
     Color black = GetColor(0x739552ff);
 
+    Color cursor_color = GetColor(0xffee80FF);
+    Color selected_color = GetColor(0x8ab7ffFF);
+
     //         // 63 62 61 60 59 58 57 56
     //         // 55 54 53 52 51 50 49 48
     //         // 47 46 45 44 43 42 41 40
@@ -226,28 +230,89 @@ void Game::draw_board() {
     for (int i = 0; i < 64; i++) {
         int x = i % 8;
         int y = i / 8;
-        DrawRectangle(
-            (x * this->square_size) + this->x, 
-            (y * this->square_size) + this->y, 
-            this->square_size, 
-            this->square_size,
-            (w_b == true ? white : black)
-        );
+        if (this->cursor.x == x && this->cursor.y == y) {
+            DrawRectangle(
+                (x * this->square_size) + this->x, 
+                (y * this->square_size) + this->y, 
+                this->square_size, 
+                this->square_size,
+                cursor_color
+            );
+        } else if (this->selected_square.has_value() && this->selected_square.value().x == x && this->selected_square.value().y == y ){
+            DrawRectangle(
+                (x * this->square_size) + this->x, 
+                (y * this->square_size) + this->y, 
+                this->square_size, 
+                this->square_size,
+                selected_color
+            );
+        } else {
+            DrawRectangle(
+                (x * this->square_size) + this->x, 
+                (y * this->square_size) + this->y, 
+                this->square_size, 
+                this->square_size,
+                (w_b == true ? white : black)
+            );
+        }
         this->draw_piece(i);
+
         w_b = !w_b;
         if (x == 7) {
             w_b = !w_b;
         }
     }
+
+    this->draw_debug();
 }
 
 bool Board::toggle_turn() {
     return !this->is_white_turn;
 }
 
-bool is_k_bit_set(int n, int k)
-{
-    return (n & ( 1 << k )) >> k;
+void Game::select_piece() {
+    // checks if std::optional is empty or not
+    // if  not throws an error
+    //
+    // Get the coordinates of the cursor
+    // checks if there is a piece or not
+
+    if (this->selected_square.has_value()) {
+        throw std::runtime_error("Already selected a piece");
+        return;
+    }
+    assert(this->selected_square.has_value() == false);
+    float x = this->cursor.x;
+    float y = this->cursor.y;
+
+    // check if the selected square has a piece
+    uint16_t piece = this->b.get_piece_at_square(this->b.get_square(x, y));
+
+    if (piece == 0) {
+        return;
+    }
+
+    this->selected_square = Vector2{x, y};
+}
+
+bool Board::move_piece(Vector2 old_pos, Vector2 new_pos) {
+    // Get the piece at the old position
+    // Get the piece at the new position
+
+    // TODO: update all the bitboard accordingly -- maybe make a function that returns a pointer to the correct bitboard of the piece so app can update it
+    return true;
+}
+
+void Game::move_piece() {
+    if (this->b.move_piece(this->selected_square.value(), this->cursor) == true) {
+        this->selected_square = std::nullopt;
+        this->b.toggle_turn();
+    }
+}
+
+void Game::move_cursor(int x, int y) {
+    this->cursor.x += x;
+    this->cursor.y += y;
 }
 
 uint16_t Board::get_piece_at_square(int idx) {

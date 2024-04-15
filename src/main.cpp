@@ -15,6 +15,23 @@ int main() {
         ClearBackground(RAYWHITE);
 
         b.draw_board();
+        if (IsKeyPressed(KEY_W)) {
+            b.move_cursor(0, -1);
+        } else if (IsKeyPressed(KEY_S)) {
+            b.move_cursor(0, 1);
+        } else if (IsKeyPressed(KEY_A)) {
+            b.move_cursor(-1, 0);
+        } else if (IsKeyPressed(KEY_D)) {
+            b.move_cursor(1, 0);
+        } else if (IsKeyPressed(KEY_ENTER)) {
+            if (b.is_selected()) {
+                b.move_piece();
+            } else {
+                b.select_piece();
+            }
+        } else if (IsKeyPressed(KEY_BACKSPACE)) {
+            b.print_debug();
+        }
 
         EndDrawing();
     }

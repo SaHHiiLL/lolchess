@@ -2,6 +2,7 @@
 #define CHESS3_HPP
 #include <cstdint>
 #include <iostream>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <unordered_map>
@@ -146,9 +147,14 @@ public:
         std::cout << "Board bitboard: " << board_bitboard() << std::endl;
     }
 
+
+
+    // Returns an enum of the current turn
     PieceColor get_turn() {
         return is_white_turn ? PieceColor::White : PieceColor::Black;
     }
+
+    bool move_piece(Vector2 old_pos, Vector2 new_pos);
 };
 
 static std::string default_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
@@ -158,8 +164,7 @@ class Game {
     int y = 0;
     int square_size;
     Vector2 cursor = { 0, 0 };
-    Vector2 selected_square = { 0, 0 };
-
+    std::optional<Vector2> selected_square = std::nullopt;
 
     Board b{ };
 
@@ -183,6 +188,25 @@ public:
     void load_texture();
     // Get texture of a single piece
     Texture2D get_texture(uint16_t piece);
+
+    // 
+    void move_cursor(int x, int y);
+
+    void select_piece();
+
+    bool is_selected() {
+        return this->selected_square.has_value();
+    }
+
+    void draw_debug() {
+        DrawText("Debug", 10, 10, 20, BLACK);
+        DrawText(std::to_string(this->b.board_bitboard()).c_str(), 10, 30, 20, RED);
+    }
+
+    void move_piece();
+    void print_debug() {
+        this->b.debug_print();
+    }
 
 };
 
