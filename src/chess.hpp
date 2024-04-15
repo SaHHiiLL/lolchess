@@ -1,5 +1,5 @@
-#ifndef CHESS3_HPP
-#define CHESS3_HPP
+#ifndef CHESS_HPP
+#define CHESS_HPP
 #include <cstdint>
 #include <iostream>
 #include <optional>
@@ -45,6 +45,7 @@ class Board {
 
 public:
 
+    // Bitboards for each piece
     uint64_t white_pawn_bitboard = { 0 };
     uint64_t white_rook_bitboard = { 0 };
     uint64_t white_king_bitboard = { 0 };
@@ -124,7 +125,7 @@ public:
     // Get piece at a square
     uint16_t get_piece_at_square(int y);
     // toggle turn
-    bool toggle_turn();
+    void toggle_turn();
 
     void debug_print() {
         std::cout << "White pawn: " << white_pawn_bitboard << std::endl;
@@ -147,6 +148,36 @@ public:
         std::cout << "Board bitboard: " << board_bitboard() << std::endl;
     }
 
+    uint64_t* get_bitboard(uint16_t piecetype) {
+        switch (piecetype) {
+            case PieceColor::White | PieceType::Pawn:
+                return &white_pawn_bitboard;
+            case PieceColor::White | PieceType::Rook:
+                return &white_rook_bitboard;
+            case PieceColor::White | PieceType::King:
+                return &white_king_bitboard;
+            case PieceColor::White | PieceType::Queen:
+                return &white_queen_bitboard;
+            case PieceColor::White | PieceType::Bishop:
+                return &white_bishop_bitboard;
+            case PieceColor::White | PieceType::Knight:
+                return &white_knight_bitboard;
+
+            case PieceColor::Black | PieceType::Pawn:
+                return &black_pawn_bitboard;
+            case PieceColor::Black | PieceType::Rook:
+                return &black_rook_bitboard;
+            case PieceColor::Black | PieceType::King:
+                return &black_king_bitboard;
+            case PieceColor::Black | PieceType::Queen:
+                return &black_queen_bitboard;
+            case PieceColor::Black | PieceType::Bishop:
+                return &black_bishop_bitboard;
+            case PieceColor::Black | PieceType::Knight:
+                return &black_knight_bitboard;
+        }
+        return nullptr;
+    }
 
 
     // Returns an enum of the current turn
@@ -165,6 +196,8 @@ class Game {
     int square_size;
     Vector2 cursor = { 0, 0 };
     std::optional<Vector2> selected_square = std::nullopt;
+
+    bool debug = false;
 
     Board b{ };
 
@@ -193,22 +226,26 @@ public:
     void move_cursor(int x, int y);
 
     void select_piece();
+    void unselect_piece();
+    void mouse_cursor();
+    void move_piece();
 
     bool is_selected() {
         return this->selected_square.has_value();
     }
 
-    void draw_debug() {
-        DrawText("Debug", 10, 10, 20, BLACK);
-        DrawText(std::to_string(this->b.board_bitboard()).c_str(), 10, 30, 20, RED);
+    void toggle_debug() {
+        this->debug = !this->debug;
     }
 
-    void move_piece();
+    void draw_debug() {
+        if (this->debug) {
+            DrawText("Debug", 10, 10, 20, BLACK);
+            DrawText(std::to_string(this->b.board_bitboard()).c_str(), 10, 30, 20, RED);
+        }
+    }
     void print_debug() {
         this->b.debug_print();
     }
-
 };
-
-
-#endif // CHESS3_HPP
+#endif // CHESS_HPP

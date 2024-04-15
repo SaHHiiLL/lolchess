@@ -4,12 +4,8 @@ OUT_DIR=target
 CFLAGS=-g  -lm -ldl -lrt -lpthread -Wall
 RAYLIB_PATH=-g3 ./lib/raylib/src/libraylib.a
 
-
 build: pre
 	$(CC) -o $(OUT_DIR)/lolchess src/*.cpp $(RAYLIB_PATH) $(CFLAGS)
-
-build-debug: pre
-	$(CC) -o $(OUT_DIR)/lolchess src/main.cpp src/chess3.cpp $(RAYLIB_PATH) $(CFLAGS) -DDEBUG
 
 pre:
 	mkdir -p $(OUT_DIR)

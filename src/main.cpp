@@ -1,4 +1,4 @@
-#include "./chess3.hpp"
+#include "./chess.hpp"
 #include "../lib/raylib/src/raylib.h"
 
 int main() {
@@ -23,15 +23,19 @@ int main() {
             b.move_cursor(-1, 0);
         } else if (IsKeyPressed(KEY_D)) {
             b.move_cursor(1, 0);
-        } else if (IsKeyPressed(KEY_ENTER)) {
+        } else if (IsKeyPressed(KEY_ENTER) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             if (b.is_selected()) {
                 b.move_piece();
             } else {
                 b.select_piece();
             }
+        } else if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) {
+            b.unselect_piece();
         } else if (IsKeyPressed(KEY_BACKSPACE)) {
             b.print_debug();
         }
+
+        b.mouse_cursor();
 
         EndDrawing();
     }

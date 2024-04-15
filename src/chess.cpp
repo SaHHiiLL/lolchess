@@ -1,4 +1,4 @@
-#include "./chess3.hpp"
+#include "./chess.hpp"
 #include <cassert>
 #include <cstdint>
 #include <iostream>
@@ -124,7 +124,6 @@ void Board::load_position_from_fen(std::string fen) {
             }
             case 'r': {
                 int idx = this->get_square(x++, y);
-                std::cout << "Rook at: " << idx << std::endl;
                 this->black_rook_bitboard |= (1ULL << (63 - idx));
                 this->board[idx] = PieceColor::Black | PieceType::Rook;
                 break;
@@ -195,18 +194,23 @@ void Board::load_position_from_fen(std::string fen) {
                 this->board[idx] = PieceColor::White | PieceType::Pawn;
                 break;
             }
+            case ' ': {
+                goto loop_end;
+            }
             default: {
                 char d = fen.at(i);
                 if (std::isdigit(d)) {
                     x += d - '0';
                 } else {
                     x++;
-                    // std::cerr << "Lol Invalid char at : " << i << "Char in question: " << d << std::endl;
-                    // exit(1);
+                    std::cerr << "Lol Invalid char at : " << i << "Char in question: " << d << std::endl;
+                    exit(1);
                 }
             }
         }
     }
+loop_end:
+    return;
 }
 
 void Game::draw_board() {
@@ -227,6 +231,7 @@ void Game::draw_board() {
     //         // 07 06 05 04 03 02 01 00
 
 
+    DrawText(this->b.get_turn() == White ? "White To Move" : "Black to Move", 10, 10, 20, BLACK);
     for (int i = 0; i < 64; i++) {
         int x = i % 8;
         int y = i / 8;
@@ -266,8 +271,23 @@ void Game::draw_board() {
     this->draw_debug();
 }
 
-bool Board::toggle_turn() {
-    return !this->is_white_turn;
+void Board::toggle_turn() {
+    this->is_white_turn = !this->is_white_turn;
+}
+#include <math.h>
+
+// BUG: sometimes when the cursor is outside the board the game crashes
+//
+//NOTE: for some reason the cursor is selecting random pieces not defined in the board or values that should not be there in any cass
+//
+// TODO: Fix the bug
+void Game::mouse_cursor() {
+    Vector2 mouse = GetMousePosition();
+    if (mouse.x < this->x || mouse.x > this->x + this->size || mouse.y < this->y || mouse.y > this->y + this->size) {
+        return;
+    }
+    this->cursor.x = floor((mouse.x - this->x ) / this->square_size);
+    this->cursor.y = floor((mouse.y - this->y ) / this->square_size);
 }
 
 void Game::select_piece() {
@@ -278,10 +298,9 @@ void Game::select_piece() {
     // checks if there is a piece or not
 
     if (this->selected_square.has_value()) {
-        throw std::runtime_error("Already selected a piece");
-        return;
+        this->selected_square = std::nullopt;
     }
-    assert(this->selected_square.has_value() == false);
+    assert(this->selected_square.has_value() == false && "Selected square is not empty");
     float x = this->cursor.x;
     float y = this->cursor.y;
 
@@ -291,6 +310,19 @@ void Game::select_piece() {
     if (piece == 0) {
         return;
     }
+    assert(piece != 0 && "No piece at the selected square");
+
+    auto [color, type] = this->b.num_to_enum(piece);
+
+    bool correct_turn = this->b.get_turn() == color;
+
+    std::cout << "Turn: " << correct_turn << std::endl;
+    if (!correct_turn) {
+        std::cout << "Wrong turn" << std::endl;
+        return;
+    }
+
+    std::cout << "Selected piece: " << piece << std::endl;
 
     this->selected_square = Vector2{x, y};
 }
@@ -300,7 +332,44 @@ bool Board::move_piece(Vector2 old_pos, Vector2 new_pos) {
     // Get the piece at the new position
 
     // TODO: update all the bitboard accordingly -- maybe make a function that returns a pointer to the correct bitboard of the piece so app can update it
+
+    int old_idx = this->get_square(old_pos.x, old_pos.y);
+    int new_idx = this->get_square(new_pos.x, new_pos.y);
+
+    uint16_t old_piece = this->get_piece_at_square(old_idx);
+    uint16_t new_piece = this->get_piece_at_square(new_idx);
+
+    if (old_piece == 0) { // No piece at the old position
+        return false;
+    }
+    //NOTE: There is a piece at the new position, so we must destroy it if its an enemy piece;
+    if (new_piece != 0) {
+        // Check if the piece is an enemy piece
+        if (this->num_to_enum(old_piece).first == this->num_to_enum(new_piece).first) {
+            return false;
+        } else {
+            // Destroy the enemy piece
+            uint64_t* bitboard = this->get_bitboard(new_piece);
+            *bitboard &= ~(1ULL << (63 - new_idx));
+        }
+    }
+
+
+    // Update the bitboards
+    //
+    uint64_t* bitboard = this->get_bitboard(old_piece);
+    // Cmagic to unset the bit at the old position and set the bit at the new position
+    *bitboard &= ~(1ULL << (63 - old_idx));
+    *bitboard |= (1ULL << (63 - new_idx));
+
+    this->board[old_idx] = 0;
+    this->board[new_idx] = old_piece;
+
     return true;
+}
+
+void Game::unselect_piece() {
+    this->selected_square = std::nullopt;
 }
 
 void Game::move_piece() {
@@ -332,5 +401,3 @@ void Game::draw_piece(int i) {
     int y = i / 8;
     DrawTexture(texture, x * this->square_size + this->x, y * this->square_size + this->y, WHITE);
 }
-
-
