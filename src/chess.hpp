@@ -39,8 +39,26 @@ enum PieceType {
     Queen = 5,
     King = 6,
 };
+
+
+
 class Board {
 
+    struct Move {
+        Vector2 start_pos;
+        Vector2 end_pos;
+
+        bool is_eq(Move x) {
+            return x.start_pos.x == start_pos.x && x.start_pos.y == start_pos.y && x.end_pos.x == end_pos.x && x.end_pos.y == end_pos.y;
+        }
+    };
+
+    struct Piece {
+        PieceColor color;
+        PieceType type;
+    };
+
+    std::vector<Move> moves = {};
     bool is_white_turn = true;
 
 public:
@@ -118,6 +136,8 @@ public:
     uint64_t enum_to_num(PieceColor color, PieceType type);
     // Converts piece number to a colour and type enums
     std::pair<PieceColor, PieceType> num_to_enum(uint16_t pp);
+
+    Piece num_to_enum_p(uint16_t pp);
     // Get the idx of a square of represented in 1D array
     int get_square(int x, int y);
     // Parses fen
@@ -186,6 +206,10 @@ public:
     }
 
     bool move_piece(Vector2 old_pos, Vector2 new_pos);
+    void generate_moves();
+    bool is_pawn_starting_post(int file, PieceColor color);
+    bool is_playable_move(Vector2 to, Vector2 from);
+
 };
 
 static std::string default_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
@@ -212,6 +236,7 @@ public:
         this->load_texture();
         this->b.load_position_from_fen(fen);
         this->b.debug_print();
+        this->b.generate_moves();
     }
     // Draws the board
     void draw_board();
@@ -229,6 +254,7 @@ public:
     void unselect_piece();
     void mouse_cursor();
     void move_piece();
+
 
     bool is_selected() {
         return this->selected_square.has_value();

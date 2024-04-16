@@ -7,7 +7,7 @@ int main() {
     SetTargetFPS(60);
 
     int board_size = 500;
-    Game b(board_size, 100, 100, "r6r/1b2k1bq/8/8/7B/8/8/R3K2R");
+    Game b(board_size, 100, 100);
 
     while (!WindowShouldClose()) {
         BeginDrawing();
@@ -15,6 +15,7 @@ int main() {
         ClearBackground(RAYWHITE);
 
         b.draw_board();
+        // TODO: remoev keyboard controls  
         if (IsKeyPressed(KEY_W)) {
             b.move_cursor(0, -1);
         } else if (IsKeyPressed(KEY_S)) {

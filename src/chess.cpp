@@ -24,6 +24,7 @@ std::pair<PieceColor, PieceType> Board::num_to_enum(uint16_t pp) {
 
     if (p < 0) {
         // White
+        p += 8;
         color = White;
     } else {
         // Black
@@ -221,20 +222,13 @@ void Game::draw_board() {
     Color cursor_color = GetColor(0xffee80FF);
     Color selected_color = GetColor(0x8ab7ffFF);
 
-    //         // 63 62 61 60 59 58 57 56
-    //         // 55 54 53 52 51 50 49 48
-    //         // 47 46 45 44 43 42 41 40
-    //         // 39 38 37 36 35 34 33 32
-    //         // 31 30 29 28 27 26 25 24
-    //         // 23 22 21 20 19 18 17 16
-    //         // 15 14 13 12 11 10 09 08
-    //         // 07 06 05 04 03 02 01 00
-
-
     DrawText(this->b.get_turn() == White ? "White To Move" : "Black to Move", 10, 10, 20, BLACK);
     for (int i = 0; i < 64; i++) {
         int x = i % 8;
         int y = i / 8;
+
+
+
         if (this->cursor.x == x && this->cursor.y == y) {
             DrawRectangle(
                 (x * this->square_size) + this->x, 
@@ -331,8 +325,6 @@ bool Board::move_piece(Vector2 old_pos, Vector2 new_pos) {
     // Get the piece at the old position
     // Get the piece at the new position
 
-    // TODO: update all the bitboard accordingly -- maybe make a function that returns a pointer to the correct bitboard of the piece so app can update it
-
     int old_idx = this->get_square(old_pos.x, old_pos.y);
     int new_idx = this->get_square(new_pos.x, new_pos.y);
 
@@ -354,6 +346,11 @@ bool Board::move_piece(Vector2 old_pos, Vector2 new_pos) {
         }
     }
 
+    if (!this->is_playable_move(old_pos, new_pos)) {
+        std::cout << "Not a playable move" << std::endl;
+        return false;
+    }
+
 
     // Update the bitboards
     //
@@ -366,6 +363,42 @@ bool Board::move_piece(Vector2 old_pos, Vector2 new_pos) {
     this->board[new_idx] = old_piece;
 
     return true;
+}
+
+bool Board::is_playable_move(Vector2 start, Vector2 end) {
+    Move x = {
+        .start_pos = start,
+        .end_pos = end,
+    };
+    std::cout << this->moves.size() << std::endl;
+    for (auto move : this->moves) {
+
+        // DEBUG:
+        std::cout << "X start: " << x.start_pos.x << " " << x.start_pos.y << std::endl;
+        std::cout << "X end: " << x.end_pos.x << " " << x.end_pos.y << std::endl;
+
+        std::cout << "Move start: " << move.start_pos.x << " " << move.start_pos.y << std::endl;
+        std::cout << "Move end: " << move.end_pos.x << " " << move.end_pos.y << std::endl;
+
+        std::cout << "---------------------------------" << std::endl;
+
+        if (move.is_eq(x)) {
+            std::cout << "Move found" << std::endl;
+            return true;
+        } else {
+            // std::cout << "Move not found" << std::endl;
+            // // PRINT DEBUG:
+            // std::cout << "Start: " << move.start_pos.x << " " << move.start_pos.y << std::endl;
+            // std::cout << "End: " << move.end_pos.x << " " << move.end_pos.y << std::endl;
+            //
+            // std::cout << "---------------------------------" << std::endl;
+            // std::cout << "Start: " << x.start_pos.x << " " << x.start_pos.y << std::endl;
+            // std::cout << "End: " << x.end_pos.x << " " << x.end_pos.y << std::endl;
+            //
+            // std::cout << "----------Next--------------------" << std::endl;
+        }
+    }
+    return false;
 }
 
 void Game::unselect_piece() {
@@ -388,6 +421,85 @@ uint16_t Board::get_piece_at_square(int idx) {
     // Get the idx and then check every bitboard to see if the piece is there
     // idfk if this is a good way to do it but it works :)
     return this->board[idx];
+}
+
+void Board::generate_moves() {
+    // pseudo legal moves
+    //
+    // 1. Get the piece at the selected square
+    //
+    // NOTE: for the time being we will only generate moves for the pawns
+
+    // Pawns can only move forward if there is not piece in front of them
+    // they only move one square at a time unlsess they are at the starting position then they can move two squares
+    // Theres also En-passant and promotion but we will get to that later
+
+    // for (int i = 0; i < 8; i++) {
+    // for (int j = 0; j < 8; j++) {
+    //     uint16_t piece = this->board[i];
+    //     if (piece == 0) {
+    //         continue;
+    //     }
+    //     auto [color, type] = this->num_to_enum(piece);
+    //     if (color != this->get_turn()) {
+    //         continue;
+    //     }
+    //
+    //     int y = i / 8;
+    //     int x = i % 8;
+    //
+    //     Move move = {
+    //         .start_pos = {.x = (float)x, .y = (float)y},
+    //         .end_pos = {.x = (float)(x++), .y = (float)y }
+    //     };
+    //     this->moves.push_back(move);
+    //
+    //     if (this->is_pawn_starting_post(i, color)) {
+    //         this->moves.push_back(move = {
+    //             .start_pos = {.x = (float)x, .y = (float)y},
+    //             .end_pos = {.x = (float)(x+2), .y = (float)y }
+    //         });
+    //     }
+    // }
+
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            uint16_t piece_int = this->board[this->get_square(x, y)];
+            if (piece_int == 0) {
+                continue;
+            }
+            Board::Piece p = this->num_to_enum_p(piece_int);
+            if (p.color != this->get_turn()) {
+                std::cout << "Wrong turn" << std::endl;
+                continue;
+            }
+            std::cout << "Checking Moves for: " << x << " " << y << std::endl;
+        }
+    }
+}
+
+
+Board::Piece Board::num_to_enum_p(uint16_t pp) {
+    int p = pp - 8;
+    PieceColor color {};
+    PieceType type = (PieceType) p;
+
+    if (p < 0) {
+        // White
+        p += 8;
+        color = White;
+    } else {
+        // Black
+        color = Black;
+    }
+    return Piece {
+        .color = color,
+        .type = type
+    };
+}
+
+bool Board::is_pawn_starting_post(int file, PieceColor color) {
+    return color == White ? file == 1 : file == 6;
 }
 
 
